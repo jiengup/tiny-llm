@@ -2,7 +2,6 @@ import mlx.core as mx
 from mlx_lm.tokenizer_utils import TokenizerWrapper
 from .qwen2_week1 import Qwen2ModelWeek1
 from .qwen2_week2 import Qwen2ModelWeek2
-from .basics import logsumexp_norm
 from typing import Callable
 
 
@@ -15,7 +14,9 @@ def simple_generate(
     def _step(model, y):
         output_logits = model(y[None])
         logits = output_logits[:, -1, :]
-        logprobs = logsumexp_norm(logits)
+        logprobs = logits - mx.logsumexp(
+            logits, keepdims=True
+        )
         if sampler is None:
             return mx.argmax(logprobs, axis=-1)
         else:
